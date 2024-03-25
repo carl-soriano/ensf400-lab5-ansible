@@ -1,0 +1,9 @@
+#Uninstall nginx to make sure everything is in the right system/ the entire directory is clean 
+- name: Play - Uninstall Nginx
+  hosts: localhost
+  become: yes
+  tasks: 
+    - name: Uninstall Nginx
+      apt: name=nginx state=absent 
+
+      

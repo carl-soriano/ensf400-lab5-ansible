@@ -1,6 +1,8 @@
+---
 # First Play
 - name: Play - Handle Files in all hosts
   hosts: all
+  become: yes
   tasks:
   - name: all host are identified with a file
     copy:
@@ -49,3 +51,32 @@
     command: forever start /node-app/app.js
     when: "forever_list.stdout.find('/node-app/app.js') == -1"
 
+- name:  Play - Install and configure Nginx as LoadBalancer 
+  hosts: loadbalancer
+  become: yes 
+  tasks: 
+    - name: Update cache
+      apt: 
+        update_cache: yes
+    - name: Install Nginx 
+      apt: 
+        name: nginx 
+        state: present 
+    - name: Copy the Nginx config file to /etc/nginx/sites-available
+      copy:
+        src: nginx.cfg #src
+        dest: /etc/nginx/sites-available/nginx.cfg #dest 
+      notify: Restart Nginx 
+
+    - name: Create symlink of the config file at /etc/nginx/sites-enabled # create a link(pointer) inside the dest that points to src 
+      file: 
+        src: /etc/nginx/sites-available/nginx.cfg
+        dest: /etc/nginx/sites-enabled/default #make sure to put default so that it puts into the correct file
+        state: link
+      notify: Restart Nginx 
+    
+  handlers:                 #only runs once when it is called 
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted  #state is what you command the playbook to do 
